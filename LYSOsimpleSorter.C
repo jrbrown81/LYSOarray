@@ -4,10 +4,52 @@
 //#include <TH2.h>
 //#include <TStyle.h>
 //#include <TCanvas.h>
-//#include <iostream>
+// #include <iostream>
 
 void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 {
+// // read CSV
+// 	TTree* calTree = new TTree("calTree","tree of calibration parameters, read from calFile.csv");
+// 	calTree->ReadFile("calFile.csv","channel/I:p0/D:p1:p2");
+// 	calTree->Show(0);
+
+// Read calibration file
+	string line, word;
+	Int_t col=0;
+	ifstream calFile("calFile.csv");
+
+	Int_t chn=-1;
+	Double_t calCoef[1024][3];
+	Bool_t calibrated[1024];
+	for(int i=0;i<1024;i++) calibrated[i]=0;
+
+	Double_t eCal=0;
+
+	if(calFile.is_open()){
+		while(getline(calFile,line)){
+			// cout << line << endl;
+			istringstream iss(line);
+			while(getline(iss,word,',')){
+				if(col==0) {
+					chn=(Int_t)stoi(word);
+					calibrated[chn]=1;
+				}
+				else calCoef[chn][col-1]=(Double_t)stof(word);
+				col++;
+			}
+			chn=-1;
+			col=0;
+		}
+	} else cout << "Calibtaion file not found!" << endl;
+	// for(int i=0;i<1024;i++) {
+	// 	if(calibrated[i]==1) {
+	// 		cout << i << " ";
+	// 		for(int j=0;j<3;j++) cout << calCoef[i][j] << " ";
+	// 		cout << endl;
+	// 	}
+	// }
+
+
 //	cout << "Switching to Batch mode" << endl;
 //	gROOT->SetBatch(1);
 	cout << "Executing Loop()" << endl;
@@ -28,9 +70,12 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 	else cout << "Processing all entries" << endl;
 
 	TH1I* qdc_h[1024];
+	TH1I* energy_h[1024];
 	for(int i=0;i<1024;i++) {
 		qdc_h[i]=new TH1I(Form("qdc%i_h",i),Form("QDC spectrum for chn %i",i),1100,-10,100);
+		energy_h[i]=new TH1I(Form("energy%i_h",i),Form("Energy spectrum for chn %i",i),2000,0,2000);
 	}
+	TH1I* totalEnergy_h=new TH1I("totalEnergy_h","Total Energy Spectrum of all pixels (keV)",2000,0,2000);
 	// TH1I* tot_h[1024];
 	// for(int i=0;i<1024;i++) {
 	// 	tot_h[i]=new TH1I(Form("tot%i_h",i),Form("TOT spectrum for chn %i",i),500,0,5e6);
@@ -39,6 +84,9 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 	TH2F* chnVsQDC_h = new TH2F("chnVsQDC_h","ChannelID vs. QDC value",550,-10,100,1024,0,1024);
 	chnVsQDC_h->SetXTitle("QDC value");
 	chnVsQDC_h->SetYTitle("channelID");
+	TH2F* chnVsEnergy_h = new TH2F("chnVsEnergy_h","ChannelID vs. Energy (keV)",500,0,2000,1024,0,1024);
+	chnVsEnergy_h->SetXTitle("Energy (keV)");
+	chnVsEnergy_h->SetYTitle("channelID");
 	// TH2F* chnVsTOT_h = new TH2F("chnVsTOT_h","ChannelID vs. TOT value",550,-1e6,1e7,400,0,400);
 	// chnVsTOT_h->SetXTitle("TOT value");
 	// chnVsTOT_h->SetYTitle("channelID");
@@ -143,7 +191,7 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 
 	 Long64_t nbytes = 0, nb = 0;
 	Long64_t jentry=0;
-	Long64_t event=0;
+	// Long64_t event=0;
 //	nentries=100;
 // Loop over entries in tree
 	for (jentry=0; jentry<nentries;jentry++) {
@@ -239,11 +287,17 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 		}*/
 ////////////
 
+		if(calibrated[channelID]==1) eCal=calCoef[channelID][0]+calCoef[channelID][1]*energy+calCoef[channelID][2]*energy*energy;
+		else eCal=energy;
+
 		chnVsQDC_h->Fill(energy,channelID);
+		chnVsEnergy_h->Fill(eCal,channelID);
 		// chnVsTOT_h->Fill(tot,channelID);
 		// simpleSumEnergyQDC_h->Fill(energy);
 		// if(channelID<128) {
 			qdc_h[channelID]->Fill(energy);
+			energy_h[channelID]->Fill(eCal);
+			totalEnergy_h->Fill(eCal);
 			// tot_h[channelID]->Fill(tot);
 		// }
 		// if(channelID>=512) {
@@ -276,7 +330,7 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 */
    } // end of loop over entries
    cout << jentry << " enties processed \n";
-   cout << event << " events found \n";
+   // cout << event << " events found \n";
 
    TCanvas* qdcMode_c=new TCanvas("qdcMode_c","QDC mode");
    qdcMode_c->Divide(2,2);
@@ -416,6 +470,7 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
    // sumTOT_h->Write();
    // sumEnergyTOT_h->Write();
    chnVsQDC_h->Write();
+   chnVsEnergy_h->Write();
    // chnVsTOT_h->Write();
 
    // mult_h->Write();
@@ -442,7 +497,11 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
    hitPatt_c->Write();
    // coinc_c->Write();
    for(int i=0;i<8;i++) qdc_c[i]->Write();
-	 for(int i=0;i<1024;i++) qdc_h[i]->Write();
+	 for(int i=0;i<1024;i++) {
+		 qdc_h[i]->Write();
+		 energy_h[i]->Write();
+	 }
+	 totalEnergy_h->Write();
 	 // qdc_c1->Write();
 	 // qdc_c2->Write();
    // tot_c1->Write();
