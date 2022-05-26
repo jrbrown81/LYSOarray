@@ -39,6 +39,7 @@ void LYSOcal(TString filename,Double_t fitMin=14, Double_t fitMax=18,
   vector<Double_t> energyVec;
   if(nToFit==4) for(int i=0;i<nToFit;i++) energyVec.push_back(energyArray[i]);
   if(nToFit==3) for(int i=1;i<nToFit+1;i++) energyVec.push_back(energyArray[i]);
+  if(nToFit==1) for(int i=1;i<nToFit+1;i++) energyVec.push_back(energyArray[i]);
 
   char answer;
   int	fit=0;
@@ -192,6 +193,7 @@ void LYSOcal(TString filename,Double_t fitMin=14, Double_t fitMax=18,
     	gr->GetYaxis()->SetTitle("energy (keV)");
       TF1* linFunc = new TF1("linFunc","pol1",0,8192);
       // TF1* linFunc = new TF1("linFunc","pol2",0,8192);
+      if(nToFit==1) linFunc->FixParameter(0,0);
     	gr->Fit("linFunc","q");
     	gr->Draw("a*");
       gPad->Update();
@@ -229,9 +231,10 @@ void LYSOcal(TString filename,Double_t fitMin=14, Double_t fitMax=18,
 
 void Usage()
 {
-	cout << endl << "LYSOcal(TString filename, Double_t fitMin, Double_t fitMax, int nToFit=4, , Int_t nToFit=4, TString myOpt=\"Q\") \n\n"
+	cout << endl << "LYSOcal(TString filename, Double_t fitMin, Double_t fitMax, Double_t thresh=0.0005, Int_t nToFit=4, TString myOpt=\"Q\") \n\n"
 		<< "Use 'fitMin' and 'fitMax' to set range to fit 511 keV peak in 'histo'. \n"
-		<< "Use 'nToFit' to limit number of peaks to use for linearity correction (highest energy peaks will be used). \n"
+		<< "Use 'nToFit' to limit number of peaks to use for linearity correction. \n"
+    << "'nToFit=3' will skip the 1275 keV peak. 'nToFit=1' uses only 511 keV and fixes the intercept at 0. \n"
 		<< "'thresh' can be used to adjust minimum amplitude of peaks that will be fitted.\n"
     << "Use 'myOpt=\"I\"' to interactively select the correct peaks." << endl;
 }
