@@ -1,3 +1,15 @@
+/////////////////////////////////////////////////////////////////////////
+//////////////////////////// LYSOsimpleSorter ///////////////////////////
+// Simple code to read petsys ROOT files from LYSO array and generare
+// histograms, with and without energy calibration applied.
+// Energy calibration is read in from a csv file.
+//
+//   In a ROOT session, you can do:
+//      root> .L LYSOsimpleSorter.C
+//	root> run("path/filename.root",nEntries_to_process)
+//	if "nEntries_to_process" is omitted, whole file will be processed
+/////////////////////////////////////////////////////////////////////////
+
 #define LYSOsimpleSorter_cxx
 #include "LYSOsimpleSorter.h"
 #include <TSystem.h>
@@ -8,15 +20,10 @@
 
 void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 {
-// // read CSV
-// 	TTree* calTree = new TTree("calTree","tree of calibration parameters, read from calFile.csv");
-// 	calTree->ReadFile("calFile.csv","channel/I:p0/D:p1:p2");
-// 	calTree->Show(0);
-
 // Read calibration file
 	string line, word;
 	Int_t col=0;
-	ifstream calFile("calFile.csv");
+	ifstream calFile("calFile3.csv");
 
 	Int_t chn=-1;
 	Double_t calCoef[1024][3];
@@ -27,7 +34,6 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 
 	if(calFile.is_open()){
 		while(getline(calFile,line)){
-			// cout << line << endl;
 			istringstream iss(line);
 			while(getline(iss,word,',')){
 				if(col==0) {
@@ -49,14 +55,7 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 	// 	}
 	// }
 
-
-//	cout << "Switching to Batch mode" << endl;
-//	gROOT->SetBatch(1);
 	cout << "Executing Loop()" << endl;
-//   In a ROOT session, you can do:
-//      root> .L LYSOsimpleSorter.C
-//	root> run("path/filename.root",nEntries_to_process)
-//	if "nEntries_to_process" is omitted, whole file will be processed
 
 	TString str=fChain->GetCurrentFile()->GetName();
 	cout << "Reading data from file: " << str << endl;
