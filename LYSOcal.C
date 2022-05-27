@@ -168,6 +168,11 @@ void LYSOcal(TString filename,Double_t fitMin=14, Double_t fitMax=18,
       	} // end of 'while(answer!='q')'
         // if(answer=='q') continue;
       } // end of interctive bit
+      else for(int i=0;i<nToFit;i++) {
+        qdcToUse.push_back(ordered[i]);
+        EtoUse.push_back(energyVec[i]);
+        nUsed=nToFit;
+      }
 
       lin_c->Clear();
       lin_c->Divide(1,3);
@@ -209,8 +214,10 @@ void LYSOcal(TString filename,Double_t fitMin=14, Double_t fitMax=18,
       p1_h->Fill(chnID,p1);
       p2_h->Fill(chnID,p2);
 
-      cout << "Press any 'y' to continue: ";
-      cin >> answer;
+      if(myOpt.Contains("I")) {
+        cout << "Press any 'y' to continue: ";
+        cin >> answer;
+      }
     } else cout << "No histogram." << endl;
 // end of if entires>0
 
