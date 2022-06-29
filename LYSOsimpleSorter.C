@@ -193,13 +193,13 @@ void readCalFile(TString calFileName)
 	// }
 }
 
-void run(TString string, TString calFileName="calFile.csv", Int_t toProcess=0)
+void run(TString inFile, TString calFileName="calFile.csv", Int_t toProcess=0)
 {
 
-	TFile f1(string);
+	TFile f1(inFile);
 	TTree* tree;
 	f1.GetObject("data",tree);
-	if(tree) cout << "data tree found in file: " << string << endl;
+	if(tree) cout << "data tree found in file: " << inFile << endl;
 	else cout << "Error!" << endl;
 	LYSOsimpleSorter pss(tree);
 
