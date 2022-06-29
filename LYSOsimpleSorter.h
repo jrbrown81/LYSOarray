@@ -15,6 +15,8 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 
 // Some global variables //
 	Float_t arraySize=26.88;

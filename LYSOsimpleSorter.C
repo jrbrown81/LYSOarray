@@ -13,10 +13,6 @@
 #define LYSOsimpleSorter_cxx
 #include "LYSOsimpleSorter.h"
 #include <TSystem.h>
-//#include <TH2.h>
-//#include <TStyle.h>
-//#include <TCanvas.h>
-// #include <iostream>
 
 void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 {
@@ -37,7 +33,7 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 	TH1I* energy_h[1024];
 	for(int i=0;i<1024;i++) {
 		qdc_h[i]=new TH1I(Form("qdc%i_h",i),Form("QDC spectrum for chn %i",i),1100,-10,100);
-		energy_h[i]=new TH1I(Form("energy%i_h",i),Form("Energy spectrum for chn %i",i),2000,0,2000);
+		energy_h[i]=new TH1I(Form("energy%i_h",i),Form("Energy spectrum for chn %i",i),2100,-100,2000);
 	}
 	TH1I* totalEnergy_h=new TH1I("totalEnergy_h","Total Energy Spectrum of all pixels (keV)",2000,0,2000);
 
