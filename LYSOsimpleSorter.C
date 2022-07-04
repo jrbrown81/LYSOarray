@@ -68,13 +68,16 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 // Loop over entries in tree
 	for (jentry=0; jentry<nentries;jentry++) {
 		if(jentry!=0 && jentry%10000==0) cout << jentry << " enties processed \r" << flush;
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
 //       if (Cut(ientry) < 0) continue;
 
-		if(calCoef[channelID][1]!=0) eCal=calCoef[channelID][0]+calCoef[channelID][1]*energy+calCoef[channelID][2]*energy*energy;
-		else eCal=energy;
+		eCal=0;
+		for(int i=0;i<calCoef[channelID].size();i++) eCal+=calCoef[channelID][i]*pow(energy,i);
+
+		// if(calCoef[channelID][1]!=0) eCal=calCoef[channelID][0]+calCoef[channelID][1]*energy+calCoef[channelID][2]*energy*energy;
+		// else eCal=energy;
 
 		chnVsQDC_h->Fill(energy,channelID);
 		chnVsEnergy_h->Fill(eCal,channelID);
@@ -169,20 +172,27 @@ void readCalFile(TString calFileName)
 	ifstream calFile(calFileName);
 
 	Int_t chn=-1;
-	for(int i=0;i<1024;i++) calCoef[i][1]=0;
+	Int_t nCalChns=0;
+	// for(int i=0;i<1024;i++) calCoef[i][1]=0;
 
 	if(calFile.is_open()){
 		cout << "Reading calibration from file: " << calFileName << endl;
 		while(getline(calFile,line)){
+			nCalChns++;
 			istringstream iss(line);
 			while(getline(iss,word,',')){
-				if(col==0) chn=(Int_t)stoi(word);
-				else calCoef[chn][col-1]=(Double_t)stof(word);
+				if(col==0) {
+					chn=(Int_t)stoi(word);
+					if(calCoef[chn].size()!=0) cerr << "Warning! Channel " << chn << " is being read in multiple times." << endl;
+				}
+				else calCoef[chn].push_back((Double_t)stof(word));
+				// else calCoef[chn][col-1]=(Double_t)stof(word);
 				col++;
 			}
 			chn=-1;
 			col=0;
 		}
+		cout << nCalChns << " calibration channels read." << endl;
 	} else cout << "Calibtaion file: " << calFileName << " not found!" << endl;
 	// for(int i=0;i<1024;i++) {
 	// 	if(calibrated[i]==1) {
