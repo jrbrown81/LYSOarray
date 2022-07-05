@@ -164,7 +164,7 @@ void LYSOsimpleSorter::Loop(Int_t toProcess=0)
 
 }
 
-void readCalFile(TString calFileName)
+void readCalFile(TString calFileName, Bool_t recalibrate)
 {
 // Read calibration file
 	string line, word;
@@ -183,7 +183,10 @@ void readCalFile(TString calFileName)
 			while(getline(iss,word,',')){
 				if(col==0) {
 					chn=(Int_t)stoi(word);
-					if(calCoef[chn].size()!=0) cerr << "Warning! Channel " << chn << " is being read in multiple times." << endl;
+					if(calCoef[chn].size()!=0) {
+						if(!recalibrate) cerr << "Warning! Channel " << chn << " calibration is being overwritten." << endl;
+						calCoef[chn].clear();
+					}
 				}
 				else calCoef[chn].push_back((Double_t)stof(word));
 				// else calCoef[chn][col-1]=(Double_t)stof(word);
@@ -201,9 +204,10 @@ void readCalFile(TString calFileName)
 	// 		cout << endl;
 	// 	}
 	// }
+	calibrated=1;
 }
 
-void run(TString inFile, TString calFileName="calFile.csv", Int_t toProcess=0)
+void run(TString inFile, TString calFileName="calFile.csv", Int_t toProcess=0, Bool_t recalibrate=0)
 {
 
 	TFile f1(inFile);
@@ -216,7 +220,12 @@ void run(TString inFile, TString calFileName="calFile.csv", Int_t toProcess=0)
 	cout << "Switching to Batch mode" << endl;
 	gROOT->SetBatch(1);
 
-	readCalFile(calFileName);
+	if(recalibrate) {
+		cout << "Forcing recalibration..." << endl;
+		cout << "Calibraion warning will be suppressed." << endl;
+		readCalFile(calFileName, recalibrate);
+		// calibrated=false;
+	} else if(!calibrated) readCalFile(calFileName, recalibrate);
 
 	pss.Loop(toProcess);
 	gROOT->SetBatch(0);
