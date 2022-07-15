@@ -63,24 +63,7 @@ void readPETsysTempFile(TString filename="tempLog.txt", int mod2Plot=-1, bool re
         // int sensor=0;
         iss >> dummy >> dummy >> mod >> tempBuffer[0] >> dummy >> tempBuffer[1] >> dummy >> tempBuffer[2] >> dummy >> tempBuffer[3] >> dummy;
         goodTemp=1;
-
-        // iss >> dummy >> dummy >> mod >> temp >> dummy;
-        // temp_v[mod][sensor].push_back(temp);
-        // sensor++;
-        // iss >> temp >> dummy;
-        // temp_v[mod][sensor].push_back(temp);
-        // sensor++;
-        // iss >> temp >> dummy;
-        // temp_v[mod][sensor].push_back(temp);
-        // sensor++;
-        // iss >> temp >> dummy;
-        // temp_v[mod][sensor].push_back(temp);
-        // sensor++;
-
-        // goodRecord=1;
-        // if(goodRecord && newRecord) {
         if((!requireRunNo || goodRun) && goodTime && goodTemp && newRecord) goodRecord=1;
-        // if(goodRun && goodTime && goodTemp && newRecord) goodRecord=1;
         if(goodRecord) {
           for(int s=0;s<4;s++) temp_v[mod][s].push_back(tempBuffer[s]);
           if(newRecord) {
@@ -218,7 +201,6 @@ void readPETsysTempFile(TString filename="tempLog.txt", int mod2Plot=-1, bool re
   gr->GetXaxis()->SetTimeDisplay(1);
   gr->GetXaxis()->SetNdivisions(503,0);
   gr->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
-  // gr->GetXaxis()->SetTimeOffset(0);
   gr->GetXaxis()->SetTimeOffset(0,"gmt");
   gr->SetTitle("Run Number to Time Conversion ; Date/Time ; Run #");
   gr->Draw("al*");
