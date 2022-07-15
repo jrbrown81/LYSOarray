@@ -1,0 +1,4 @@
+# ignore compliation files
+*.d
+*.so
+*.pcm
